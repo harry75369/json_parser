@@ -1,0 +1,12 @@
+"string"
+'string'
+100
+3.14
+1e10
+true
+false
+{"x":1,"y":2}
+{x:1,y:2}
+null
+["string",100,3.14,1e10,true,false,{"x":1,"y":2},null]
+{"nested":{"point":{"x":1,"y":2},"array":[1,2,3,4,5]},"empty":null}
