@@ -95,7 +95,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         p += 1; // "
         skipSpaces(p, end);
         if (*p != ':') {
-          throw "syntax error: semicolon expected";
+          throw "syntax error: colon expected";
         }
         p += 1; // :
         skipSpaces(p, end);
