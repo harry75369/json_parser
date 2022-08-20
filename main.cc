@@ -4,7 +4,7 @@
 
 int main() {
   std::string line, buff;
-  while (std::cin >> line) {
+  while (std::getline(std::cin, line)) {
     buff += "\n";
     buff += line;
   }

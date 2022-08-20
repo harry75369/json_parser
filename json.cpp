@@ -14,6 +14,7 @@ inline std::string readUntil(std::string::const_iterator &p,
   std::string buff;
   while (p != end && *p != ch) {
     if ((*p == '\\') && (p + 1 != end)) {
+      buff += "\\";
       buff += *(p + 1);
       p += 2;
     } else {
@@ -137,7 +138,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
 
     auto arr = std::make_shared<JsonArray>();
 
-    do {
+    while (*p != ']') {
       auto [val, sz] = parse(std::string(p, end));
       arr->values.push_back(val);
       p += sz;
@@ -146,7 +147,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         p += 1; // ,
       }
       skipSpaces(p, end);
-    } while (*p != ']');
+    }
 
     p += 1; // ]
     skipSpaces(p, end);
