@@ -54,6 +54,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         p - begin,
     };
   } else if (std::isdigit(*p) || *p == '.' || *p == '-') { // ---------- for JsonNumber
+#if 0
     size_t pos = 0;
     try {
       auto v = std::stod(std::string(p, end), &pos);
@@ -66,6 +67,20 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
     } catch (const std::invalid_argument& excep) {
       throw "invalid number";
     }
+#else
+    char* pos = 0;
+    const char* start = &(*p);
+    auto v = std::strtod(start, &pos); // strtod performs better than stod
+    if (0 == pos - start) {
+      throw "invalid number";
+    }
+    p += (pos - start);
+    skipSpaces(p, end);
+    return {
+      std::make_shared<JsonNumber>(v),
+      p - begin,
+    };
+#endif
   } else if (std::string(p, p + 4) == "true") { // ---------- for JsonBoolean
     p += 4;
     skipSpaces(p, end);
