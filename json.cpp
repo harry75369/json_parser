@@ -52,15 +52,19 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         std::make_shared<JsonString>(str),
         p - begin,
     };
-  } else if (std::isdigit(*p) || *p == '.') { // ---------- for JsonNumber
+  } else if (std::isdigit(*p) || *p == '.' || *p == '-') { // ---------- for JsonNumber
     size_t pos = 0;
-    auto v = std::stod(std::string(p, end), &pos);
-    p += pos;
-    skipSpaces(p, end);
-    return {
-        std::make_shared<JsonNumber>(v),
-        p - begin,
-    };
+    try {
+      auto v = std::stod(std::string(p, end), &pos);
+      p += pos;
+      skipSpaces(p, end);
+      return {
+          std::make_shared<JsonNumber>(v),
+          p - begin,
+      };
+    } catch (const std::invalid_argument& excep) {
+      throw "invalid number";
+    }
   } else if (std::string(p, p + 4) == "true") { // ---------- for JsonBoolean
     p += 4;
     skipSpaces(p, end);
