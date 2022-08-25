@@ -104,7 +104,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
         }
         p += 1; // :
         skipSpaces(p, end);
-        auto [val, sz] = parse(std::string_view(p, end));
+        auto [val, sz] = parse(std::string_view(&(*p), end - p));
         obj->pairs[key] = val;
         p += sz;
         skipSpaces(p, end);
@@ -116,7 +116,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
         auto key = readUntil(p, end, ':');
         p += 1; // :
         skipSpaces(p, end);
-        auto [val, sz] = parse(std::string_view(p, end));
+        auto [val, sz] = parse(std::string_view(&(*p), end - p));
         obj->pairs[key] = val;
         p += sz;
         skipSpaces(p, end);
@@ -139,7 +139,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
     auto arr = std::make_shared<JsonArray>();
 
     while (*p != ']') {
-      auto [val, sz] = parse(std::string_view(p, end));
+      auto [val, sz] = parse(std::string_view(&(*p), end - p));
       arr->values.push_back(val);
       p += sz;
       skipSpaces(p, end);
