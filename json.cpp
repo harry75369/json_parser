@@ -194,12 +194,20 @@ void Json::print(Json::JsonValue value, int indent, bool narrow) {
     if (auto p = std::dynamic_pointer_cast<JsonObject>(value)) {
       if (p->isNull) {
         std::cout << (narrow ? "" : spaces(indent)) << "null";
+      } else if (p->pairs.size() == 0) {
+        std::cout << (narrow ? "" : spaces(indent)) << "{}";
       } else {
         std::cout << (narrow ? "" : spaces(indent)) << "{" << std::endl;
-        for (auto &iter : p->pairs) {
-          std::cout << spaces(indent + 2) << iter.first << ": ";
-          print(iter.second, indent + 2, true);
-          std::cout << "," << std::endl;
+        std::vector<std::string> keys(p->pairs.size());
+        std::transform(p->pairs.begin(), p->pairs.end(), keys.begin(), [](auto& pair) { return pair.first; });
+        std::sort(keys.begin(), keys.end());
+        for (auto &key : keys) {
+          std::cout << spaces(indent + 2) << "\"" << key << "\"" << ": ";
+          print(p->pairs[key], indent + 2, true);
+          if (key != keys.back()) {
+            std::cout << ",";
+          }
+          std::cout << std::endl;
         }
         std::cout << spaces(indent) << "}";
       }
@@ -208,12 +216,19 @@ void Json::print(Json::JsonValue value, int indent, bool narrow) {
     }
   } else if (value->type == "array") {
     if (auto p = std::dynamic_pointer_cast<JsonArray>(value)) {
-      std::cout << (narrow ? "" : spaces(indent)) << "[" << std::endl;
-      for (auto &v : p->values) {
-        print(v, indent + 2);
-        std::cout << "," << std::endl;
+      if (p->values.size() == 0) {
+        std::cout << (narrow ? "" : spaces(indent)) << "[]";
+      } else {
+        std::cout << (narrow ? "" : spaces(indent)) << "[" << std::endl;
+        for (auto &v : p->values) {
+          print(v, indent + 2);
+          if (v != p->values.back()) {
+            std::cout << ",";
+          }
+          std::cout << std::endl;
+        }
+        std::cout << spaces(indent) << "]";
       }
-      std::cout << spaces(indent) << "]";
     } else {
       throw "type error: array";
     }
