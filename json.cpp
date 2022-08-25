@@ -54,20 +54,6 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
         p - begin,
     };
   } else if (std::isdigit(*p) || *p == '.' || *p == '-') { // ---------- for JsonNumber
-#if 0
-    size_t pos = 0;
-    try {
-      auto v = std::stod(std::string(p, end), &pos);
-      p += pos;
-      skipSpaces(p, end);
-      return {
-          std::make_shared<JsonNumber>(v),
-          p - begin,
-      };
-    } catch (const std::invalid_argument& excep) {
-      throw "invalid number";
-    }
-#else
     char* pos = 0;
     const char* start = &(*p);
     auto v = std::strtod(start, &pos); // strtod performs better than stod
@@ -80,7 +66,6 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
       std::make_shared<JsonNumber>(v),
       p - begin,
     };
-#endif
   } else if (std::string(p, p + 4) == "true") { // ---------- for JsonBoolean
     p += 4;
     skipSpaces(p, end);
@@ -172,15 +157,6 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
   return {nullptr, 0};
 }
 
-#if 0
-inline std::string spaces(int indent) {
-  std::string buff;
-  for (int i = 0; i < indent; i++) {
-    buff += " ";
-  }
-  return buff;
-}
-#else
 std::string_view spaces(int indent) {
   static std::string buff(8, ' ');
   if (indent > buff.size()) {
@@ -189,7 +165,6 @@ std::string_view spaces(int indent) {
   }
   return std::string_view(buff.c_str(), std::max(0, indent));
 }
-#endif
 
 void Json::print(Json::JsonValue value, int indent, bool narrow) {
   if (!value) {
