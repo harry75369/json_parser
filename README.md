@@ -12,7 +12,16 @@ $ make
 
 ## Test
 
-Run
+In `build` folder, run
 ```
 $ for line in `cat ../json.txt`; do ./main <<< $line; echo; done
 ```
+
+## Performance Test
+
+In `build` folder, run
+```
+$ for i in ../data/*.json; do echo $i; time ./main < $i > /dev/null; done
+```
+
+Test data are from: https://github.com/miloyip/nativejson-benchmark
