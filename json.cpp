@@ -168,6 +168,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
   return {nullptr, 0};
 }
 
+#if 0
 std::string_view spaces(int indent) {
   static std::string buff(8, ' ');
   if (indent > buff.size()) {
@@ -252,3 +253,79 @@ void Json::print(Json::JsonValue value, int indent, bool narrow) {
     }
   }
 }
+#else
+void Json::print(Json::JsonValue value, int indent, bool narrow) {
+  static const char* spaces = "                                ";
+  if (!value) {
+    printf("undefined");
+    return;
+  }
+  if (value->type == "string") {
+    if (auto p = std::dynamic_pointer_cast<JsonString>(value)) {
+      printf("%.*s\"%s\"", narrow ? 0 : indent, spaces, p->value.c_str());
+    } else {
+      throw "type error: string";
+    }
+  } else if (value->type == "number") {
+    if (auto p = std::dynamic_pointer_cast<JsonNumber>(value)) {
+      if (p->numType == "integer") {
+        printf("%.*s%ld", narrow ? 0 : indent, spaces, p->value.integer);
+      } else if (p->numType == "floating") {
+        printf("%.*s%.16g", narrow ? 0 : indent, spaces, p->value.floating);
+      } else {
+        throw "invalid number type";
+      }
+    } else {
+      throw "type error: number";
+    }
+  } else if (value->type == "boolean") {
+    if (auto p = std::dynamic_pointer_cast<JsonBoolean>(value)) {
+      printf("%.*s%s", narrow ? 0 : indent, spaces, p->value ? "true" : "false");
+    } else {
+      throw "type error: boolean";
+    }
+  } else if (value->type == "object") {
+    if (auto p = std::dynamic_pointer_cast<JsonObject>(value)) {
+      if (p->isNull) {
+        printf("%.*snull", narrow ? 0 : indent, spaces);
+      } else if (p->pairs.size() == 0) {
+        printf("%.*s{}", narrow ? 0 : indent, spaces);
+      } else {
+        printf("%.*s{\n", narrow ? 0 : indent, spaces);
+        std::vector<std::string> keys(p->pairs.size());
+        std::transform(p->pairs.begin(), p->pairs.end(), keys.begin(), [](auto& pair) { return pair.first; });
+        std::sort(keys.begin(), keys.end());
+        for (auto &key : keys) {
+          printf("%.*s\"%s\": ", indent + 2, spaces, key.c_str());
+          print(p->pairs[key], indent + 2, true);
+          if (key != keys.back()) {
+            printf(",");
+          }
+          printf("\n");
+        }
+        printf("%.*s}", indent, spaces);
+      }
+    } else {
+      throw "type error: object";
+    }
+  } else if (value->type == "array") {
+    if (auto p = std::dynamic_pointer_cast<JsonArray>(value)) {
+      if (p->values.size() == 0) {
+        printf("%.*s[]", narrow ? 0 : indent, spaces);
+      } else {
+        printf("%.*s[\n", narrow ? 0 : indent, spaces);
+        for (auto &v : p->values) {
+          print(v, indent + 2);
+          if (v != p->values.back()) {
+            printf(",");
+          }
+          printf("\n");
+        }
+        printf("%.*s]", indent, spaces);
+      }
+    } else {
+      throw "type error: array";
+    }
+  }
+}
+#endif
