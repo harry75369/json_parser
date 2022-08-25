@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -42,7 +43,7 @@ struct Json {
     std::vector<JsonValue> values;
   };
 
-  static std::pair<JsonValue, size_t> parse(const std::string &buff);
+  static std::pair<JsonValue, size_t> parse(const std::string_view &buff);
 
   static void print(JsonValue value, int indent = 0, bool narrow = false);
 };

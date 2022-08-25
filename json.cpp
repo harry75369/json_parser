@@ -2,15 +2,15 @@
 #include <iostream>
 #include <memory>
 
-inline void skipSpaces(std::string::const_iterator &p,
-                       const std::string::const_iterator &end) {
+inline void skipSpaces(std::string_view::const_iterator &p,
+                       const std::string_view::const_iterator &end) {
   while (p != end && std::isspace(*p)) {
     p++;
   }
 }
 
-inline std::string readUntil(std::string::const_iterator &p,
-                             const std::string::const_iterator &end, char ch) {
+inline std::string readUntil(std::string_view::const_iterator &p,
+                             const std::string_view::const_iterator &end, char ch) {
   std::string buff;
   while (p != end && *p != ch) {
     if ((*p == '\\') && (p + 1 != end)) {
@@ -25,7 +25,7 @@ inline std::string readUntil(std::string::const_iterator &p,
   return buff;
 }
 
-std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
+std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
   if (buff.empty()) {
     return {nullptr, 0};
   }
@@ -119,7 +119,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         }
         p += 1; // :
         skipSpaces(p, end);
-        auto [val, sz] = parse(std::string(p, end));
+        auto [val, sz] = parse(std::string_view(p, end));
         obj->pairs[key] = val;
         p += sz;
         skipSpaces(p, end);
@@ -131,7 +131,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
         auto key = readUntil(p, end, ':');
         p += 1; // :
         skipSpaces(p, end);
-        auto [val, sz] = parse(std::string(p, end));
+        auto [val, sz] = parse(std::string_view(p, end));
         obj->pairs[key] = val;
         p += sz;
         skipSpaces(p, end);
@@ -154,7 +154,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
     auto arr = std::make_shared<JsonArray>();
 
     while (*p != ']') {
-      auto [val, sz] = parse(std::string(p, end));
+      auto [val, sz] = parse(std::string_view(p, end));
       arr->values.push_back(val);
       p += sz;
       skipSpaces(p, end);
@@ -172,6 +172,7 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string &buff) {
   return {nullptr, 0};
 }
 
+#if 0
 inline std::string spaces(int indent) {
   std::string buff;
   for (int i = 0; i < indent; i++) {
@@ -179,6 +180,16 @@ inline std::string spaces(int indent) {
   }
   return buff;
 }
+#else
+std::string_view spaces(int indent) {
+  static std::string buff(8, ' ');
+  if (indent > buff.size()) {
+    buff.resize(2 * buff.size(), ' ');
+    return spaces(indent);
+  }
+  return std::string_view(buff.c_str(), std::max(0, indent));
+}
+#endif
 
 void Json::print(Json::JsonValue value, int indent, bool narrow) {
   if (!value) {
