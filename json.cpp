@@ -1,6 +1,8 @@
 #include "json.hpp"
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 inline void skipSpaces(std::string_view::const_iterator &p,
@@ -63,6 +65,14 @@ std::pair<Json::JsonValue, size_t> Json::parse(const std::string_view &buff) {
     }
     p += (pos - start);
     skipSpaces(p, end);
+    auto parsed = std::string_view(start, pos - start);
+    if (parsed.find('.') == std::string_view::npos) {
+      auto v = std::strtol(start, nullptr, 10);
+      return {
+        std::make_shared<JsonNumber>(v),
+        p - begin,
+      };
+    }
     return {
       std::make_shared<JsonNumber>(v),
       p - begin,
@@ -180,7 +190,14 @@ void Json::print(Json::JsonValue value, int indent, bool narrow) {
     }
   } else if (value->type == "number") {
     if (auto p = std::dynamic_pointer_cast<JsonNumber>(value)) {
-      std::cout << (narrow ? "" : spaces(indent)) << p->value;
+      if (p->numType == "integer") {
+        std::cout << (narrow ? "" : spaces(indent)) << std::fixed << p->value.integer;
+      } else if (p->numType == "floating") {
+        static const auto pre = std::numeric_limits<double>::digits10 + 1;
+        std::cout << (narrow ? "" : spaces(indent)) << std::defaultfloat << std::setprecision(pre) << p->value.floating;
+      } else {
+        throw "invalid number type";
+      }
     } else {
       throw "type error: number";
     }

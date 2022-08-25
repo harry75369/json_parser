@@ -21,8 +21,13 @@ struct Json {
   };
 
   struct JsonNumber : JsonBase {
-    JsonNumber(double val) : JsonBase("number"), value(val) {}
-    double value;
+    JsonNumber(double val) : JsonBase("number"), numType("floating"), value{ .floating = val } {}
+    JsonNumber(long val) : JsonBase("number"), numType("integer"), value{ .integer = val } {}
+    std::string numType;
+    union {
+      double floating;
+      long integer;
+    } value;
   };
 
   struct JsonBoolean : JsonBase {
