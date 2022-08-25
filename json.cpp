@@ -1,4 +1,5 @@
 #include "json.hpp"
+#include <algorithm>
 #include <iostream>
 #include <memory>
 
